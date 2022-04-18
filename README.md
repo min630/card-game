@@ -5,3 +5,5 @@
 用JavaScript做的翻牌小遊戲
 
 遊戲試玩網址：https://min630.github.io/card-game/
+
+![image](https://github.com/min630/card-game/blob/main/screenshot.JPG)
