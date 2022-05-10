@@ -4,7 +4,6 @@ const Symbols = [
   'https://cdn-icons-png.flaticon.com/512/138/138455.png', // 方塊
   'https://cdn-icons-png.flaticon.com/512/105/105219.png' // 梅花
 ]
-const symbolNames = ['spade', 'heart', 'diamond', 'club']
 //宣告遊戲狀態
 const GAME_STATE = {
   FirstCardAwaits: 'FirstCardAwaits',
@@ -16,12 +15,33 @@ const GAME_STATE = {
 
 const view = {
   getCardElement(index) {
-    const symbolName = symbolNames[Math.floor(index / 13)]
-    return `<div class="card back ${symbolName}" data-index="${index}"> </div>`
+    return `<div class="card back" data-index="${index}"> </div>`
+  },
+  setCardPosition(cards) {
+    for (let i = 0; i < cards.length; i++) {
+      const number = i % 13
+      const line = Math.floor(i / 13) + 1
+      const width = cards[i].clientWidth
+      const height = cards[i].clientHeight
+      cards[i].style.transform = `translate(-${number * (width + 8)}px, -${line * (height + 8)}px)`
+    }
+  },
+  dealCards(cards) {
+    for (let i = 0; i < cards.length; i++) {
+      setTimeout(() => {
+        cards[i].classList.add('deal-cards')
+      }, 50 * (i + 1))
+    }
+    cards.forEach(card => {
+      card.addEventListener("animationend", () => {
+        card.style.transform = ''
+        card.classList.remove('deal-cards')
+      })
+    })
   },
   getCardContent(index) {
     const number = this.transformNumber((index % 13) + 1)
-    const symbol = Symbols[Math.floor(index / 13)] //在0~51中每13張為一種花色
+    const symbol = Symbols[Math.floor(index / 13)]
     return `<p>${number}</p>
       <img src="${symbol}">
       <p>${number}</p>`
@@ -80,11 +100,41 @@ const view = {
       <p>Complete!</p>
       <p>Score: ${model.score}</p>
       <p>You've tried: ${model.triedTimes} times</p>
+      <p> <button class="btn">Play Again!</button></p>
       `
     const header = document.querySelector('#header')
     header.before(div)
-  }
-
+    const finishedAnimation = [
+      { transform: 'scale(0)' },
+      { transform: 'scale(1)' }
+    ];
+    div.animate(finishedAnimation, {
+      duration: 1000,
+      iterations: 1,
+    })
+    const btn = document.querySelector('p .btn')
+    btn.addEventListener('click', () => {
+      window.location.reload()
+    })
+  },
+  cardsFly(cards) {
+    const randomArray = utility.getRandomNumberArray(52)
+    for (let i = 0; i < cards.length; i++) {
+      setTimeout(() => {
+        cards[randomArray[i]].animate(
+          [
+            { transform: "translateY(0px)" },
+            { transform: "translateY(-800px)" }
+          ],
+          {
+            duration: 2000,
+            iterations: 1,
+            fill: 'forwards',
+          }
+        )
+      }, 50 * (i + 1))
+    }
+  },
 }
 
 const model = {
@@ -100,6 +150,10 @@ const controller = {
   currentState: GAME_STATE.FirstCardAwaits,
   generateCards() {
     view.displayCards(utility.getRandomNumberArray(52))  //得到隨機牌組
+  },
+  moveCards(cards) {
+    view.setCardPosition(cards)
+    view.dealCards(cards)
   },
   dispatchCardAction(card) {
     if (!card.classList.contains('back')) {
@@ -120,12 +174,13 @@ const controller = {
           this.currentState = GAME_STATE.CardsMatched
           view.renderScore(model.score += 10)
           view.pairCards(...model.revealedCards)
-          model.revealedCards = []
           if (model.score === 260) {
             this.currentState = GAME_STATE.GameFinished
             view.showGameFinished()
+            view.cardsFly(document.querySelectorAll('.card'))
             return
           }
+          model.revealedCards = []
           this.currentState = GAME_STATE.FirstCardAwaits
         } else {
           this.currentState = GAME_STATE.CardsMatchFailed
@@ -134,8 +189,8 @@ const controller = {
         }
         break
     }
-    console.log('this.currentState', this.currentState)
-    console.log('revealedCards', model.revealedCards.map(card => card.dataset.index))
+    // console.log('this.currentState', this.currentState)
+    // console.log('revealedCards', model.revealedCards.map(card => card.dataset.index))
   },
   resetCards() {
     view.flipCards(...model.revealedCards)
@@ -156,11 +211,14 @@ const utility = {
   }
 }
 
-//view.displayCards()
+
 //用controller統一派發動作，controller以外的函式不要暴露在global區域
 controller.generateCards()
-
+const cards = document.querySelectorAll('.card')
+controller.moveCards(cards)
 //在每一個card設置監聽器
-document.querySelectorAll('.card').forEach(card => {
+cards.forEach(card => {
   card.addEventListener('click', event => controller.dispatchCardAction(card))
 })
+
+
