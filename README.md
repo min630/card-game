@@ -12,4 +12,9 @@
 
 遊戲試玩網址：https://min630.github.io/card-game/
 
-![image](https://github.com/min630/card-game/blob/main/screenshot.JPG)
+## 新增
+
+2022.5.10 新增發牌動畫、遊戲結束動畫、重新開始按鈕。 參考了[MioRain大大的文章](https://medium.com/@ericzero1593/%E6%92%B2%E5%85%8B%E7%89%8C-%E7%99%BC%E7%89%8C%E5%8B%95%E7%95%AB%E8%A3%BD%E4%BD%9C%E7%99%BC%E6%83%B3%E8%88%87%E6%B5%81%E7%A8%8B-2771a51a9559)做出的特效!!
+
+
+![image](https://github.com/min630/card-game/blob/main/initialize.gif)
